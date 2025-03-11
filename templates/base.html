@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>{% block title %}Gachabros{% endblock %}</title>
+        <link href="{% static 'dist/styles.css' %}" rel="stylesheet" />
+    </head>
+    <body class="bg-gray-100">
+        <!-- Navbar -->
+        {% include 'partials/navbar.html' %}
+
+        <!-- Main content Outlet -->
+        <main class="container mx-auto py-4">
+            {% block content %}
+            <!-- Content from child templates goes here -->
+            {% endblock %}
+        </main>
+
+        <!-- Optional footer -->
+        {% include 'partials/footer.html' %}
+    </body>
+</html>
