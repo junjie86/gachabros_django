@@ -1,0 +1,212 @@
+{% extends "base.html" %} {% block title %}{{ event.name }} - Draw Event{% endblock %} {% block content %}
+<div class="max-w-7xl mx-auto py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-center mb-6">{{ event.name }} - Draw Event</h1>
+
+    {% if event.remaining_prizes <= 0 %}
+    <p class="mt-4 text-center text-red-500 text-lg">This event is over.</p>
+    {% else %} {% if user_is_turn %}
+    <div class="text-center mt-6">
+        <p class="text-xl text-green-600">It's your turn to pick a prize!</p>
+        <p id="timer" class="text-lg font-medium mt-2 text-yellow-600"></p>
+    </div>
+
+    <!-- Fixed 4-Column Grid -->
+    <div class="grid grid-cols-4 gap-6 mt-8">
+        {% for prize in unopened_prizes %}
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-shadow hover:shadow-lg">
+            <!-- Responsive Image Container -->
+            <div class="aspect-w-4 aspect-h-3 rounded-md overflow-hidden mb-4 bg-gray-100 dark:bg-gray-700">
+                {% if prize.image %}
+                <img src="{{ prize.image.url }}" alt="{{ prize.name }}" class="object-cover w-full h-full rounded-md" />
+                {% else %}
+                <div class="flex items-center justify-center w-full h-full">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 12m-4 0l-4 4m-4-4l4-4" />
+                    </svg>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Prize Details -->
+            <div class="text-center">
+                <h3 class="font-semibold text-lg mb-2 truncate">{{ prize.name }}</h3>
+                <button
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
+                    onclick="pickPrize('{{ prize.id }}')">
+                    Pick Prize
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center mt-6">
+        <p class="text-xl text-gray-600 dark:text-gray-300">Waiting for your turn...</p>
+        <h2 class="text-2xl mt-4 text-gray-800 dark:text-gray-200">Queue</h2>
+        <ul class="mt-2 space-y-1">
+            {% for ticket in queue %}
+            <li class="py-1 text-gray-700 dark:text-gray-400">
+                {{ ticket.user.user.username }} -
+                <span class="text-sm">{{ ticket.purchased_at|date:"M d, Y H:i" }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Fixed Buy Ticket Button -->
+    <div class="mt-8 text-center">
+        <button class="bg-green-500 hover:bg-green-600 text-black px-6 py-3 rounded-lg shadow-md transition-colors" onclick="showBuyTicketPopup()">
+            Buy Ticket
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Fixed Modal Implementation -->
+<div id="buyTicketModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md mx-4">
+        <form method="POST" action="{% url 'buy_ticket' event.id %}">
+            {% csrf_token %}
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">Buy Ticket for {{ event.name }}</h2>
+                <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400" onclick="hideBuyTicketPopup()">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="mb-4 text-gray-700 dark:text-gray-400">Ticket Price: <span class="font-bold text-lg">${{ event.ticket_price }}</span></p>
+            <div class="mb-4">
+                <label for="quantity" class="block text-gray-700 dark:text-gray-400">Number of Tickets:</label>
+                <input type="number" name="quantity" id="quantity" value="1" min="1" class="border rounded px-2 py-1 w-full" />
+            </div>
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    Buy Ticket(s)
+                </button>
+                <button
+                    type="button"
+                    class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    onclick="hideBuyTicketPopup()">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+      function pickPrize(prizeId) {
+        const eventId = {{ event_id }};
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/event/event/${eventId}/pick/${prizeId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (!response.ok) {
+                // If not OK, try to read the response text for debugging.
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert("Error: " + data.error);
+            } else {
+                alert("Prize picked: " + data.prize.name);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error("Error picking prize:", error);
+            alert("An error occurred while picking prize. Please try again.");
+        });
+    }
+
+    function showBuyTicketPopup() {
+        document.getElementById('buyTicketModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideBuyTicketPopup() {
+        document.getElementById('buyTicketModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    const event_id = {{ event_id }};
+
+
+    const activeTicket = {
+        id: {% if current_ticket.id %}'{{ current_ticket.id }}'{% else %}null{% endif %},
+        purchased_at: {% if current_ticket.purchased_at %}"{{ current_ticket.purchased_at|date:'c' }}"{% else %}null{% endif %},
+        turn_started_at: {% if current_ticket.turn_started_at %}"{{ current_ticket.turn_started_at|date:'c' }}"{% else %}null{% endif %},
+        user_is_turn: {{ user_is_turn|yesno:"true,false" }},
+        ticket_expired: {{ ticket_expired|yesno:"true,false" }}
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const timerElement = document.getElementById('timer');
+        if (timerElement && activeTicket.user_is_turn && activeTicket.turn_started_at) {
+            const expiration = new Date(activeTicket.turn_started_at);
+            expiration.setMinutes(expiration.getMinutes() + 5);
+
+            const timerInterval = setInterval(() => {
+                const now = new Date();
+                const diff = expiration - now;
+
+                if (diff <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.textContent = 'Time expired. Auto-picking prize...';
+
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                    if (!csrfToken) {
+                        alert('Error: CSRF token not found. Please refresh the page.');
+                        setTimeout(() => location.reload(), 2000);
+                        return;
+                    }
+                    fetch(`/event/event/${ event_id }/auto-pick/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken.value,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({}),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(`Error: ${data.error}`);
+                        } else {
+                            alert(`Auto-picked prize: ${data.prize ? data.prize.name : 'Prize assigned'}`);
+                        }
+                        setTimeout(() => location.reload(), 2000);
+                    })
+                    .catch(error => {
+                        alert('An error occurred during auto-pick. Refreshing page in 5 seconds...');
+                        setTimeout(() => location.reload(), 5000);
+                    });
+                    return;
+                }
+
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                timerElement.textContent = `${minutes}m ${seconds}s left`;
+            }, 1000);
+        } else if(timerElement) {
+            timerElement.textContent = "Waiting for your turn...";
+        }
+    });
+</script>
+{% endblock %}

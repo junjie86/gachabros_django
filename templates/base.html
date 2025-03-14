@@ -8,13 +8,15 @@
     </head>
     <body class="bg-gray-100">
         <!-- Navbar -->
-        {% include 'partials/navbar.html' %}
+        {% csrf_token %} {% include 'partials/navbar.html' %}
 
         <!-- Main content Outlet -->
-        <main class="container mx-auto py-4">
-            {% block content %}
-            <!-- Content from child templates goes here -->
-            {% endblock %}
+        <main class="max-w-4xl mx-auto py-6 px-6">
+            <div class="w-full max-w-5xl px-4">
+                {% block content %}
+                <!-- Content from child templates goes here -->
+                {% endblock %}
+            </div>
         </main>
 
         <!-- Optional footer -->

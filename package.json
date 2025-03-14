@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/cli": "^4.0.12",
     "@tailwindcss/postcss": "^4.0.12",
     "postcss": "^8.5.3",

@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}Dashboard | Gachabros{% endblock %} {% block content %}
+<div class="max-w-5xl mx-auto py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white text-center">Welcome, {{ request.user.username }}!</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-center">Here's your account overview.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+        <!-- Wallet Balance -->
+        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg shadow p-6 text-center mt-4">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Balance</h2>
+            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">💰 ${{ request.user.profile.wallet.balance }}</p>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg shadow p-6 text-center mt-4">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+            <p class="text-gray-600 dark:text-gray-400">Check your latest transactions and draws.</p>
+            <a href="/wallet/transactions/" class="mt-2 inline-block text-blue-600 hover:underline">View History</a>
+        </div>
+
+        <!-- Tickets -->
+        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg shadow p-6 text-center mt-4">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Tickets</h2>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400">🎟 {{ request.user.profile.tickets.count }} tickets</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

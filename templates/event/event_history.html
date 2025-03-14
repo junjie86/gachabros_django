@@ -1,0 +1,123 @@
+{% extends "base.html" %} {% block title %}Event History | Gachabros{% endblock %} {% block content %}
+<div class="max-w-5xl mx-auto py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white text-center">Event History</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-center">View all past events.</p>
+
+    <!-- Pending Events Section -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white text-center">Pending Events</h2>
+        <div class="mt-6 overflow-x-auto">
+            <table class="w-full border-collapse rounded-lg shadow-md table-fixed">
+                <thead>
+                    <tr class="bg-gray-200 dark:bg-gray-800 text-white">
+                        <th class="p-3 w-1/4 cursor-pointer" onclick="sortTable(0, 'pendingTable', this)">
+                            Event Name <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(1, 'pendingTable', this)">
+                            Start Time <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(2, 'pendingTable', this)">
+                            End Time <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(3, 'pendingTable', this)">
+                            Total Prizes <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(4, 'pendingTable', this)">
+                            Remaining Prizes <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(5, 'pendingTable', this)">
+                            Ticket Price <span class="sort-icon"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="pendingTable">
+                    {% for event in events %} {% if event.status == 'pending' %}
+                    <tr class="border-t text-white">
+                        <td class="p-3 truncate">{{ event.name }}</td>
+                        <td class="p-3">{{ event.start_time }}</td>
+                        <td class="p-3">{{ event.end_time }}</td>
+                        <td class="p-3">{{ event.total_prizes }}</td>
+                        <td class="p-3">{{ event.remaining_prizes }}</td>
+                        <td class="p-3">${{ event.ticket_price }}</td>
+                    </tr>
+                    {% endif %} {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-3 text-center text-gray-500 dark:text-gray-400">No pending events found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Completed Events Section -->
+    <div class="mt-12">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white text-center">Completed Events</h2>
+        <div class="mt-6 overflow-x-auto">
+            <table class="w-full border-collapse rounded-lg shadow-md table-fixed">
+                <thead>
+                    <tr class="bg-gray-200 dark:bg-gray-800 text-white">
+                        <th class="p-3 w-1/4 cursor-pointer" onclick="sortTable(0, 'completedTable', this)">
+                            Event Name <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(1, 'completedTable', this)">
+                            Start Time <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(2, 'completedTable', this)">
+                            End Time <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(3, 'completedTable', this)">
+                            Total Prizes <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(4, 'completedTable', this)">
+                            Remaining Prizes <span class="sort-icon"></span>
+                        </th>
+                        <th class="p-3 w-1/6 cursor-pointer" onclick="sortTable(5, 'completedTable', this)">
+                            Ticket Price <span class="sort-icon"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="completedTable">
+                    {% for event in events %} {% if event.status == 'completed' %}
+                    <tr class="border-t text-white">
+                        <td class="p-3 truncate">{{ event.name }}</td>
+                        <td class="p-3">{{ event.start_time }}</td>
+                        <td class="p-3">{{ event.end_time }}</td>
+                        <td class="p-3">{{ event.total_prizes }}</td>
+                        <td class="p-3">{{ event.remaining_prizes }}</td>
+                        <td class="p-3">${{ event.ticket_price }}</td>
+                    </tr>
+                    {% endif %} {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-3 text-center text-gray-500 dark:text-gray-400">No completed events found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sortTable(columnIndex, tableId, thElement) {
+        let table = document.getElementById(tableId);
+        let rows = Array.from(table.rows);
+        let sortDirection = table.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
+        table.dataset.sortDirection = sortDirection;
+
+        let sortedRows = rows.sort((a, b) => {
+            let aText = a.cells[columnIndex].textContent.trim();
+            let bText = b.cells[columnIndex].textContent.trim();
+            return sortDirection === 'asc'
+                ? aText.localeCompare(bText, undefined, { numeric: true })
+                : bText.localeCompare(aText, undefined, { numeric: true });
+        });
+
+        table.innerHTML = '';
+        sortedRows.forEach(row => table.appendChild(row));
+
+        document.querySelectorAll('.sort-icon').forEach(icon => (icon.textContent = ''));
+        thElement.querySelector('.sort-icon').textContent = sortDirection === 'asc' ? ' ▲' : ' ▼';
+    }
+</script>
+{% endblock %}

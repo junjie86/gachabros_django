@@ -1,0 +1,62 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Login | Gachabros{% endblock %} {% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">Welcome Back!</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">Sign in to continue</p>
+
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="p-3 text-white bg-red-500 rounded">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'user_login' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label for="username_or_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username or Email</label>
+                <input
+                    type="text"
+                    name="username_or_email"
+                    id="username_or_email"
+                    required
+                    autofocus
+                    class="w-full px-4 py-2 mt-1 text-gray-900 bg-gray-100 dark:bg-gray-700 dark:text-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div class="relative">
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    required
+                    class="w-full px-4 py-2 mt-1 text-gray-900 bg-gray-100 dark:bg-gray-700 dark:text-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <button type="button" onclick="togglePassword()" class="absolute right-3 top-9 text-gray-500 dark:text-gray-300">👁</button>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                    <input type="checkbox" name="remember" class="mr-2" /> Remember Me
+                </label>
+                <a href="{% url 'password_reset' %}" class="text-sm text-blue-600 hover:underline">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="w-full px-4 py-2 mt-4 text-black bg-blue-600 hover:bg-blue-700 rounded-lg">Login</button>
+        </form>
+
+        <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
+            Don't have an account? <a href="{% url 'register' %}" class="text-blue-600 hover:underline">Sign Up</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    function togglePassword() {
+        let passwordField = document.getElementById('password');
+        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %} {% block title %}Ticket History | Gachabros{% endblock %} {% block content %}
+<div class="max-w-5xl mx-auto py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white text-center">Your Ticket History</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-center">View all your past ticket purchases.</p>
+
+    <!-- Unused Tickets Section -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white text-center">Unused Tickets</h2>
+        <div class="mt-6 overflow-x-auto">
+            <table class="w-full border-collapse rounded-lg shadow-md">
+                <thead>
+                    <tr class="bg-gray-200 dark:bg-gray-800 text-white">
+                        <th class="p-3 cursor-pointer" onclick="sortTable(0, 'unusedTable', this)">Event <span class="sort-icon"></span></th>
+                        <th class="p-3 cursor-pointer" onclick="sortTable(1, 'unusedTable', this)">Purchase Date <span class="sort-icon"></span></th>
+                        <th class="p-3 cursor-pointer" onclick="sortTable(2, 'unusedTable', this)">Price <span class="sort-icon"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="unusedTable">
+                    {% for ticket in tickets %} {% if not ticket.used %}
+                    <tr class="border-t text-white">
+                        <td class="p-3">{{ ticket.event.name }}</td>
+                        <td class="p-3">{{ ticket.purchased_at }}</td>
+                        <td class="p-3">${{ ticket.ticket_price }}</td>
+                    </tr>
+                    {% endif %} {% empty %}
+                    <tr>
+                        <td colspan="3" class="p-3 text-center text-gray-500 dark:text-gray-400">No unused tickets found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Used Tickets Section -->
+    <div class="mt-12 mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white text-center">Used Tickets</h2>
+        <div class="mt-6 overflow-x-auto">
+            <table class="w-full border-collapse rounded-lg shadow-md">
+                <thead>
+                    <tr class="bg-gray-200 dark:bg-gray-800 text-white">
+                        <th class="p-3 cursor-pointer" onclick="sortTable(0, 'usedTable', this)">Event <span class="sort-icon"></span></th>
+                        <th class="p-3 cursor-pointer" onclick="sortTable(1, 'usedTable', this)">Purchase Date <span class="sort-icon"></span></th>
+                        <th class="p-3 cursor-pointer" onclick="sortTable(2, 'usedTable', this)">Price <span class="sort-icon"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="usedTable">
+                    {% for ticket in tickets %} {% if ticket.used %}
+                    <tr class="border-t text-white">
+                        <td class="p-3">{{ ticket.event.name }}</td>
+                        <td class="p-3">{{ ticket.purchased_at }}</td>
+                        <td class="p-3">${{ ticket.ticket_price }}</td>
+                    </tr>
+                    {% endif %} {% empty %}
+                    <tr>
+                        <td colspan="3" class="p-3 text-center text-gray-500 dark:text-gray-400">No used tickets found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sortTable(columnIndex, tableId, thElement) {
+        let table = document.getElementById(tableId);
+        let rows = Array.from(table.rows);
+        let sortDirection = table.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
+        table.dataset.sortDirection = sortDirection;
+
+        let sortedRows = rows.sort((a, b) => {
+            let aText = a.cells[columnIndex].textContent.trim();
+            let bText = b.cells[columnIndex].textContent.trim();
+            return sortDirection === 'asc'
+                ? aText.localeCompare(bText, undefined, { numeric: true })
+                : bText.localeCompare(aText, undefined, { numeric: true });
+        });
+
+        table.innerHTML = '';
+        sortedRows.forEach(row => table.appendChild(row));
+
+        document.querySelectorAll('.sort-icon').forEach(icon => (icon.textContent = ''));
+        thElement.querySelector('.sort-icon').textContent = sortDirection === 'asc' ? ' ▲' : ' ▼';
+    }
+</script>
+{% endblock %}
